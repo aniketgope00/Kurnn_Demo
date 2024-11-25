@@ -83,9 +83,10 @@ def upload_file(file_path, file_name):
 
 #upload_file("Downloaded_Songs/Jason Mraz - I Won't Give Up.mp3")
 if __name__ == "__main__":
-    TOTAL_SAMPLES = 69993#Sizes for testing purposes
-    BUCKET_SIZE = 5000 #Sizes for testing purposes
+    TOTAL_SAMPLES = 5#Sizes for testing purposes
+    BUCKET_SIZE = 2 #Sizes for testing purposes
     #0. Creating buckets
+    counter = 0
     bucketlist = create_buckets(TOTAL_SAMPLES, BUCKET_SIZE)
     for bucket in bucketlist:
         #1. Pulling rows from db
@@ -112,13 +113,15 @@ if __name__ == "__main__":
             download_module.download_spotify_tracks(track_url=track_url, output_folder=output_folder)
         print(f"----Tracks Successfully Downloaded----")
         print(f"----Starting Extracting Features from Tracks----")
-        spotify_featureDB_columns = "feature_index, rms_level , spectral_centroid , bandwidth , zero_crossing_rate , band_energy_ratio , delta_spectrum_magnitude , pitch , pitch_strength , mfcc_mean , mfcc_std , average_roughness , std_roughness , one_2hz_loudness , three_15hz_loudness , twenty_43hz_loudness , sharpness , gamma_0Hz_energy , gamma_3_15Hz_energy , gamma_20_150Hz_energy , gamma_150_1000Hz_energy"
+        spotify_featureDB_columns = "rms_level , spectral_centroid , bandwidth , zero_crossing_rate , band_energy_ratio , delta_spectrum_magnitude , pitch , pitch_strength , mfcc_mean , mfcc_std , average_roughness , std_roughness , one_2hz_loudness , three_15hz_loudness , twenty_43hz_loudness , sharpness , gamma_0Hz_energy , gamma_3_15Hz_energy , gamma_20_150Hz_energy , gamma_150_1000Hz_energy"
         
         print("----CONNECTING TO spotify_features_db----")
-        for row in current_rows:
+        downloaded_files = os.listdir("data_loader_spotify/Downloaded_Songs")
+        for file in downloaded_files:
             #print(f"Extracting features for : {row["track_name"]}")
-            features_dict = feature_extractor_module.extract_audio_features("data_loader_spotify/Downloaded_Songs/" + row['artist_name'] + ' - ' + row['track_name'] + ".wav")
-            features_dict["id"] = row["idx"]
+            features_dict = feature_extractor_module.extract_audio_features("data_loader_spotify/Downloaded_Songs/" + file)
+            features_dict["id"] = counter 
+            counter += 1
             serialized_dict = make_json_serializable(features_dict)
             supabase_client.table('audio_features').insert(serialized_dict).execute()
         #Send files to db - optional
