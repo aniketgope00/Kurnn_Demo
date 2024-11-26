@@ -1,6 +1,7 @@
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import sqlite3
+import numpy as np
 
 import supabase.client
 import data_loader_spotify.spotify_download_script as download_module
@@ -44,7 +45,6 @@ def get_rows(start, end):
    responses = supabase_client.table('data').select('*').gte("idx", start).lte("idx", end).execute()
    return responses
 
-import numpy as np
 
 def make_json_serializable(input_dict):
     def serialize_value(value):
@@ -83,8 +83,8 @@ def upload_file(file_path, file_name):
 
 #upload_file("Downloaded_Songs/Jason Mraz - I Won't Give Up.mp3")
 if __name__ == "__main__":
-    TOTAL_SAMPLES = 5#Sizes for testing purposes
-    BUCKET_SIZE = 2 #Sizes for testing purposes
+    TOTAL_SAMPLES = 10000#Sizes for testing purposes
+    BUCKET_SIZE = 500 #Sizes for testing purposes
     #0. Creating buckets
     counter = 0
     bucketlist = create_buckets(TOTAL_SAMPLES, BUCKET_SIZE)
